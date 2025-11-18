@@ -23,24 +23,13 @@ export default function GeneratePickup() {
     }
   }
 
-  // Prefill remembered parent
-  useMemo(() => {
-    const raw = localStorage.getItem('remember_parent')
-    if (raw) {
-      try {
-        const obj = JSON.parse(raw)
-        setChildName(obj.childName || '')
-        setPhone(obj.phone || '')
-        setRemember(true)
-      } catch {}
-    }
-  }, [])
+  // Do not prefill by default; only store when explicitly opted-in
 
   const wa = 'https://wa.me/' + phone.replace(/[^0-9]/g,'') + '?text=' + encodeURIComponent('Pickup Code ' + code + ' for ' + childName)
   const sms = 'sms:' + phone.replace(/[^0-9]/g,'') + '?body=' + encodeURIComponent('Pickup Code ' + code + ' for ' + childName)
 
   return (
-    <div className="p-4 max-w-md mx-auto dark:text-gray-100">
+    <div className="p-4 mx-auto max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl dark:text-gray-100">
       <div className="text-lg font-semibold">Generate Pickup Code</div>
       <div className="mt-4 bg-white rounded-xl border p-4 dark:bg-gray-800 dark:border-gray-700">
         <div className="text-sm text-gray-600 dark:text-gray-300">Pickup Code for: {childName || '—'}</div>
@@ -53,10 +42,10 @@ export default function GeneratePickup() {
       </div>
       <div className="mt-4 text-sm font-semibold">Send Code to Parent</div>
       <div className="mt-2 grid gap-2">
-        <input className="px-3 py-2 border rounded dark:bg-gray-900 dark:border-gray-700" placeholder="Search by name or enter child name" value={childName} onChange={e=>setChildName(e.target.value)} />
-        <input className="px-3 py-2 border rounded dark:bg-gray-900 dark:border-gray-700" placeholder="Parent phone" value={phone} onChange={e=>setPhone(e.target.value)} />
-        <button className="px-4 py-3 bg-emerald-600 text-white rounded-lg" onClick={async()=>{ await send(); window.open(wa, '_blank') }}>Send WhatsApp</button>
-        <button className="px-4 py-3 bg-blue-600 text-white rounded-lg" onClick={async()=>{ await send(); window.location.href = sms }}>Send SMS</button>
+        <input className="px-3 py-2 border rounded-xl dark:bg-gray-900 dark:border-gray-700" placeholder="Search by name or enter child name" value={childName} onChange={e=>setChildName(e.target.value)} />
+        <input className="px-3 py-2 border rounded-xl dark:bg-gray-900 dark:border-gray-700" placeholder="Parent phone" value={phone} onChange={e=>setPhone(e.target.value)} />
+        <button className="px-4 py-3 bg-emerald-600 text-white rounded-xl border border-emerald-600 hover:bg-emerald-700 active:bg-white active:text-emerald-700 transition-colors" onClick={async()=>{ await send(); window.open(wa, '_blank') }}>Send WhatsApp</button>
+        <button className="px-4 py-3 bg-blue-600 text-white rounded-xl border border-blue-600 hover:bg-blue-700 active:bg-white active:text-blue-600 transition-colors" onClick={async()=>{ await send(); window.location.href = sms }}>Send SMS</button>
         <div className="flex items-center justify-between mt-2">
           <div>Remember this Parent</div>
           <button aria-pressed={remember} onClick={()=>{
@@ -70,7 +59,7 @@ export default function GeneratePickup() {
           </button>
         </div>
         {!!sent && <div className="text-emerald-700 dark:text-emerald-400">{sent}</div>}
-        <button className="px-4 py-3 bg-gray-200 rounded-lg dark:bg-gray-800 dark:text-gray-100" onClick={()=>{ setRefresh(r=>r+1); setSent(''); }}>Generate New Code</button>
+        <button className="px-4 py-3 bg-gray-200 rounded-xl border hover:bg-gray-300 active:bg-white transition-colors dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700" onClick={()=>{ setRefresh(r=>r+1); setSent(''); }}>Generate New Code</button>
       </div>
     </div>
   )

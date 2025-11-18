@@ -110,5 +110,5 @@ export function subscribeToCheckIns(onChange: (payload: any) => void) {
     .channel('check_ins_changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'check_ins' }, (payload) => onChange(payload))
     .subscribe()
-  return { unsubscribe: () => { supabase.removeChannel(channel) } }
+  return { unsubscribe: () => { supabase!.removeChannel(channel) } }
 }

@@ -52,7 +52,7 @@ export default function CheckIn() {
   }
 
   return (
-    <div className="p-4 max-w-xl mx-auto">
+    <div className="p-4 mx-auto max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl">
       <div className="grid gap-3">
         <input className="px-3 py-2 border rounded dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" placeholder="Child name" value={childName} onChange={e=>setChildName(e.target.value)} />
         <input className="px-3 py-2 border rounded dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" placeholder="Parent/guardian name" value={parentName} onChange={e=>setParentName(e.target.value)} />

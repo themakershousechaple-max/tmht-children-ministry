@@ -8,7 +8,7 @@ function randomDigits(len: number) {
 
 export function generateCode(service?: string) {
   const count = countByService(service)
-  const len = count >= 80 ? 4 : 3
+  const len = 4
   const used = new Set(getRecords().filter(r => r.serviceTime === service).map(r => r.code))
   let code = randomDigits(len)
   while (used.has(code)) code = randomDigits(len)

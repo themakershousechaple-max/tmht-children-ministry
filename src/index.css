@@ -3,3 +3,9 @@
 @tailwind utilities;
 
 html, body, #root { height: 100%; }
+.dark input, .dark textarea, .dark select { background-color: #111827; color: #e5e7eb; }
+.dark input::placeholder, .dark textarea::placeholder { color: #9ca3af; }
+.dark input:focus, .dark textarea:focus, .dark select:focus { background-color: #111827; }
+.dark input:-webkit-autofill,
+.dark textarea:-webkit-autofill,
+.dark select:-webkit-autofill { -webkit-box-shadow: 0 0 0px 1000px #111827 inset; -webkit-text-fill-color: #e5e7eb; caret-color: #e5e7eb; }

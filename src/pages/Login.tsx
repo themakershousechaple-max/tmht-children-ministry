@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { IconEye, IconChurch } from '../components/icons'
+import { IconEye, IconChurch, IconMail, IconLock } from '../components/icons'
 import { login } from '../lib/auth'
 import { useNavigate } from 'react-router-dom'
 
@@ -29,14 +29,14 @@ export default function Login() {
           <div className="grid gap-2">
             <label className="text-sm">Email Address</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">✉️</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"><IconMail /></span>
               <input className="w-full px-10 py-2 border rounded-lg outline-none bg-white dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" placeholder="your.email@example.com" value={email} onChange={e=>setEmail(e.target.value)} />
             </div>
           </div>
           <div className="grid gap-2">
             <label className="text-sm">Password</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">🔒</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"><IconLock /></span>
               <input type={show? 'text' : 'password'} className="w-full px-10 py-2 border rounded-lg outline-none bg-white dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" placeholder="Enter your password" value={password} onChange={e=>setPassword(e.target.value)} />
               <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" onClick={()=>setShow(s=>!s)}><IconEye /></button>
             </div>
