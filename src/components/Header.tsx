@@ -59,10 +59,6 @@ export default function Header() {
                 </div>
                 <div className="mt-4 text-xs font-semibold text-gray-500">VIEWS</div>
                 <div className="mt-2 grid gap-2">
-                  <Link to="/register" onClick={closeMenu} className={"flex items-center justify-between px-3 py-2 rounded-xl border shadow-sm bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 " + (loc.pathname === '/register' ? 'border-blue-300' : 'border-gray-200')}>
-                    <span className="flex items-center gap-2 text-gray-800 dark:text-gray-100"><IconShield /><span>Check-In</span></span>
-                    {loc.pathname === '/register' && <span className="text-xs px-2 py-1 rounded bg-blue-600 text-white">Selected</span>}
-                  </Link>
                   <Link to="/lookup" onClick={closeMenu} className={"flex items-center justify-between px-3 py-2 rounded-xl border shadow-sm bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 " + (loc.pathname === '/lookup' ? 'border-blue-300' : 'border-gray-200')}>
                     <span className="flex items-center gap-2 text-gray-800 dark:text-gray-100"><IconSearch /><span>Lookup</span></span>
                     {loc.pathname === '/lookup' && <span className="text-xs px-2 py-1 rounded bg-blue-600 text-white">Selected</span>}
