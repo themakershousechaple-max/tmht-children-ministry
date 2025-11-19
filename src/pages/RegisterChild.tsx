@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generateCode } from '../lib/code'
 import { createRecord } from '../lib/repo'
+import { generateQRCode } from '../lib/qr'
+import { sendWhatsAppMessage, formatPhoneNumber } from '../lib/whatsapp'
+import { sendSMSMessage, generateSMSMessage } from '../lib/sms'
+import { generatePickupMessage } from '../lib/qr'
 import { IconCalendar, IconBack } from '../components/icons'
 import CustomSelect from '../components/CustomSelect'
 
@@ -47,11 +51,49 @@ export default function RegisterChild() {
   if (step1Done && step2Done) currentStep = 3
 
   async function onSubmit() {
-    const childName = [first, last].filter(Boolean).join(' ')
-    const code = generateCode(classroom || undefined)
-    const url = window.location.origin + '/pickup?code=' + code
-    await createRecord({ childName, parentName: guardian || '', phone, serviceTime: classroom || undefined, notes: notes || undefined, code, qrUrl: url })
-    setSent('Registration complete')
+    try {
+      const childName = [first, last].filter(Boolean).join(' ')
+      const code = generateCode(classroom || undefined)
+      const pickupUrl = window.location.origin + '/pickup?code=' + code
+      
+      // Generate QR code
+      const qrCodeDataUrl = await generateQRCode(pickupUrl)
+      
+      // Create record with QR code
+      await createRecord({ 
+        childName, 
+        parentName: guardian || '', 
+        phone, 
+        serviceTime: classroom || undefined, 
+        notes: notes || undefined, 
+        code, 
+        qrUrl: pickupUrl 
+      })
+      
+      // Generate and send messages
+      const whatsappMessage = generatePickupMessage(childName, code, pickupUrl)
+      const smsMessage = generateSMSMessage(childName, code)
+      
+      // Send both WhatsApp and SMS messages
+      sendWhatsAppMessage(phone, whatsappMessage)
+      setTimeout(() => {
+        sendSMSMessage(phone, smsMessage)
+      }, 1000) // Small delay between messages
+      
+      // Navigate to success page with all the details
+      nav('/registration-success', {
+        state: {
+          childName,
+          pickupCode: code,
+          qrCodeDataUrl,
+          parentPhone: formatPhoneNumber(phone),
+          parentRawPhone: phone
+        }
+      })
+    } catch (error) {
+      console.error('Registration error:', error)
+      setSent('Registration failed. Please try again.')
+    }
   }
 
   function addGuardian() {

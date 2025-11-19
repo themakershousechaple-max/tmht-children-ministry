@@ -14,6 +14,7 @@ export function IconChevronRight(props: React.SVGProps<SVGSVGElement>) { return 
 export function IconMail(props: React.SVGProps<SVGSVGElement>) { return (<svg viewBox="0 0 24 24" width="1em" height="1em" {...props}><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/><path d="M3 7l9 6 9-6" stroke="currentColor" strokeWidth="2" fill="none"/></svg>) }
 export function IconLock(props: React.SVGProps<SVGSVGElement>) { return (<svg viewBox="0 0 24 24" width="1em" height="1em" {...props}><rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/><path d="M8 10V8a4 4 0 018 0v2" stroke="currentColor" strokeWidth="2" fill="none"/><circle cx="12" cy="15" r="1.5" fill="currentColor"/></svg>) }
 export function IconClose(props: React.SVGProps<SVGSVGElement>) { return (<svg viewBox="0 0 24 24" width="1em" height="1em" {...props}><path d="M6 6l12 12M6 18L18 6" stroke="currentColor" strokeWidth="2"/></svg>) }
+export function IconMessageCircle(props: React.SVGProps<SVGSVGElement>) { return (<svg viewBox="0 0 24 24" width="1em" height="1em" {...props}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke="currentColor" strokeWidth="2" fill="none"/></svg>) }
 export function LogoMark(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 48 48" width="1em" height="1em" {...props}>

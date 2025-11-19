@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Lookup from './pages/Lookup'
 import RegisterChild from './pages/RegisterChild'
+import RegistrationSuccess from './pages/RegistrationSuccess'
 import GeneratePickup from './pages/GeneratePickup'
 import Admin from './pages/Admin'
 import RequireAuth from './components/RequireAuth'
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/lookup" element={<Lookup />} />
           <Route path="/register" element={<RegisterChild />} />
+          <Route path="/registration-success" element={<RegistrationSuccess />} />
         <Route path="/generate" element={<GeneratePickup />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/pickup" element={<PickUp />} />
