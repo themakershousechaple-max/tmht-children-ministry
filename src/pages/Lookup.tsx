@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { listAll, releaseById } from '../lib/repo'
+import { addReleasedChild } from '../lib/released'
 import { IconSearch, IconShield } from '../components/icons'
 
 export default function Lookup() {
@@ -40,7 +41,13 @@ export default function Lookup() {
             {!!r.phone && <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">{r.phone}</div>}
             <div className="mt-4">
               {!r.pickUpAt ? (
-                <button className="px-4 py-3 bg-blue-600 text-white rounded-xl border border-blue-600 hover:bg-blue-700 active:bg-white active:text-blue-600 transition-colors flex items-center gap-2" onClick={()=>releaseById(r.id).then(u=>setRows(rows.map(x=>x.id===r.id?u:x)))}><IconShield className="text-white" /><span>Verify & Check-out</span></button>
+                <button className="px-4 py-3 bg-blue-600 text-white rounded-xl border border-blue-600 hover:bg-blue-700 active:bg-white active:text-blue-600 transition-colors flex items-center gap-2" onClick={()=>{
+                  releaseById(r.id).then(u=>{
+                    setRows(rows.map(x=>x.id===r.id?u:x))
+                    // Track the released child
+                    addReleasedChild(r)
+                  })
+                }}><IconShield className="text-white" /><span>Verify & Check-out</span></button>
               ) : (
                 <div className="text-emerald-700 dark:text-emerald-400">Checked-out</div>
               )}

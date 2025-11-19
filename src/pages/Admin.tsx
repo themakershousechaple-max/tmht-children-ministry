@@ -5,6 +5,7 @@ import { capacity, volunteerCount } from '../lib/config'
 import { generateQRCode, generateChildQRCode } from '../lib/qr'
 import { sendWhatsAppMessage } from '../lib/whatsapp'
 import { sendSMSMessage } from '../lib/sms'
+import { getRecentlyReleased, ReleasedChild } from '../lib/released'
 import WhatsAppMessenger from '../components/WhatsAppMessenger'
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog'
 import { IconSearch, IconDownload, IconMessageCircle, IconClose } from '../components/icons'
@@ -20,8 +21,20 @@ export default function Admin() {
   const [classroomOptions, setClassroomOptions] = useState(["Nursery", "Toddlers", "K-2nd Grade", "3rd-5th Grade", "Youth", "Special Needs"])
   const [showClassroomManager, setShowClassroomManager] = useState(false)
   const [newClassroom, setNewClassroom] = useState('')
+  const [releasedChildren, setReleasedChildren] = useState<ReleasedChild[]>([])
+  const [showReleased, setShowReleased] = useState(false)
   
   useEffect(() => { listAll().then(setRows).catch(()=>{}) }, [])
+  useEffect(() => { 
+    const released = getRecentlyReleased(24) // Get children released in last 24 hours
+    setReleasedChildren(released)
+  }, [])
+
+  const refreshReleasedChildren = () => {
+    const released = getRecentlyReleased(24)
+    setReleasedChildren(released)
+    setSent(`Refreshed released children list (${released.length} found)`)
+  }
 
   const checkedIn = useMemo(() => rows.filter(r => !r.pickUpAt), [rows])
   const checkedOut = useMemo(() => rows.filter(r => !!r.pickUpAt), [rows])
@@ -202,6 +215,57 @@ export default function Admin() {
         <button className="px-4 py-2.5 bg-gray-200 rounded-lg border hover:bg-gray-300 active:bg-white transition-colors dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 text-sm font-medium" onClick={copySummary}>Copy Summary</button>
         {!!sent && <div className="text-xs text-emerald-700 dark:text-emerald-400">{sent}</div>}
       </div>
+
+      {/* Recently Released Children Section */}
+      {releasedChildren.length > 0 && (
+        <div className="mt-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold text-amber-800 dark:text-amber-200">
+              Recently Released ({releasedChildren.length})
+            </h3>
+            <div className="flex gap-2">
+              <button 
+                onClick={refreshReleasedChildren}
+                className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 transition-colors text-sm font-medium dark:bg-amber-800 dark:text-amber-200 dark:hover:bg-amber-700"
+              >
+                Refresh
+              </button>
+              <button 
+                onClick={() => setShowReleased(!showReleased)}
+                className="px-3 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm font-medium"
+              >
+                {showReleased ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          
+          {showReleased && (
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {releasedChildren.map((child) => (
+                <div key={child.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700">
+                  <div>
+                    <div className="font-medium text-gray-800 dark:text-gray-100">{child.childName}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      {child.parentName} • {child.phone}
+                    </div>
+                    {child.classroom && (
+                      <div className="text-xs text-gray-500 dark:text-gray-500">Classroom: {child.classroom}</div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Released: {new Date(child.releasedAt).toLocaleTimeString()}
+                    </div>
+                    <div className="text-xs font-mono text-amber-600 dark:text-amber-400">
+                      Code: {child.code}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Search Section */}
       <div className="mt-6">
