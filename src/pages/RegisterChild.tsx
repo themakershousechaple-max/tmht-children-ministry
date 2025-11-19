@@ -75,7 +75,12 @@ export default function RegisterChild() {
       const smsMessage = generateSMSMessage(childName, code)
       
       // Send both WhatsApp and SMS messages
-      sendWhatsAppMessage(phone, whatsappMessage)
+      sendWhatsAppMessage({
+        phone,
+        message: whatsappMessage,
+        onSuccess: () => console.log('WhatsApp message sent successfully'),
+        onError: (error) => console.error('WhatsApp message failed:', error)
+      })
       setTimeout(() => {
         sendSMSMessage(phone, smsMessage)
       }, 1000) // Small delay between messages

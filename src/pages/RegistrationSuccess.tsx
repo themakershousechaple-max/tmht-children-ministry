@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { IconBack, IconMessageCircle, IconMail } from '../components/icons'
 import { generatePickupMessage } from '../lib/qr'
-import { sendWhatsAppMessage } from '../lib/whatsapp'
+import { sendWhatsAppMessage, createWhatsAppDirectLink } from '../lib/whatsapp'
 import { sendSMSMessage, generateSMSMessage } from '../lib/sms'
+import WhatsAppMessenger from '../components/WhatsAppMessenger'
 
 interface LocationState {
   childName: string
@@ -49,7 +50,12 @@ export default function RegistrationSuccess() {
 
   const resendWhatsApp = () => {
     const message = generatePickupMessage(state.childName, state.pickupCode, window.location.origin + '/pickup?code=' + state.pickupCode)
-    sendWhatsAppMessage(state.parentRawPhone, message)
+    sendWhatsAppMessage({
+      phone: state.parentRawPhone,
+      message,
+      onSuccess: () => console.log('WhatsApp message sent successfully'),
+      onError: (error) => console.error('WhatsApp message failed:', error)
+    })
   }
 
   const resendSMS = () => {
@@ -122,17 +128,18 @@ export default function RegistrationSuccess() {
           Please present either the code or QR code when picking up your child.
         </p>
         
-        <div className="flex gap-2">
-          <button 
-            onClick={resendWhatsApp}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-          >
-            <IconMessageCircle size={16} />
-            Resend WhatsApp
-          </button>
+        <div className="space-y-3">
+          <WhatsAppMessenger
+            phone={state.parentRawPhone}
+            message={generatePickupMessage(state.childName, state.pickupCode, window.location.origin + '/pickup?code=' + state.pickupCode)}
+            buttonText="Resend WhatsApp Message"
+            variant="primary"
+            size="sm"
+          />
+          
           <button 
             onClick={resendSMS}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
           >
             <IconMail size={16} />
             Resend SMS

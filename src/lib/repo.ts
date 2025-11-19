@@ -1,5 +1,5 @@
 import { supabase } from './db'
-import { addRecord, findByCode as lsFindByCode, getRecords, setRecords, updateById } from './storage'
+import { addRecord, findByCode as lsFindByCode, getRecords, setRecords, updateById, deleteRecord as deleteLocalRecord } from './storage'
 import { RecordInput, RecordItem } from '../types'
 import { hasSupabase } from './config'
 
@@ -121,4 +121,23 @@ export function subscribeToCheckIns(onChange: (payload: any) => void) {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'check_ins' }, (payload) => onChange(payload))
     .subscribe()
   return { unsubscribe: () => { supabase!.removeChannel(channel) } }
+}
+
+export async function deleteRecord(id: string): Promise<boolean> {
+  if (!hasSupabase() || !supabase) {
+    deleteLocalRecord(id)
+    return true
+  }
+  
+  try {
+    const { error } = await supabase.from('check_ins').delete().eq('id', id)
+    if (error) throw error
+    
+    // Also delete from local storage
+    deleteLocalRecord(id)
+    return true
+  } catch (error) {
+    console.error('Failed to delete record:', error)
+    return false
+  }
 }

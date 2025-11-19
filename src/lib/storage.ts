@@ -48,3 +48,18 @@ export function exportCsv() {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+export function deleteRecord(id: string): boolean {
+  try {
+    const list = getRecords()
+    const filteredList = list.filter(r => r.id !== id)
+    if (filteredList.length === list.length) {
+      return false // Record not found
+    }
+    setRecords(filteredList)
+    return true
+  } catch (error) {
+    console.error('Failed to delete local record:', error)
+    return false
+  }
+}
