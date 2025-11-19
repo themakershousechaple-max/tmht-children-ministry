@@ -197,9 +197,9 @@ export default function Admin() {
           <div className="text-xl font-bold">{rows.length}</div>
         </div>
       </div>
-      <div className="mt-3 grid gap-2">
-        <button className="px-3 py-2 bg-blue-600 text-white rounded-lg border border-blue-600 hover:bg-blue-700 active:bg-white active:text-blue-600 transition-colors text-sm" onClick={exportCsv}>Export CSV</button>
-        <button className="px-3 py-2 bg-gray-200 rounded-lg border hover:bg-gray-300 active:bg-white transition-colors dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 text-sm" onClick={copySummary}>Copy Summary</button>
+      <div className="mt-3 grid gap-3">
+        <button className="px-4 py-2.5 bg-blue-600 text-white rounded-lg border border-blue-600 hover:bg-blue-700 active:bg-white active:text-blue-600 transition-colors text-sm font-medium" onClick={exportCsv}>Export CSV</button>
+        <button className="px-4 py-2.5 bg-gray-200 rounded-lg border hover:bg-gray-300 active:bg-white transition-colors dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 text-sm font-medium" onClick={copySummary}>Copy Summary</button>
         {!!sent && <div className="text-xs text-emerald-700 dark:text-emerald-400">{sent}</div>}
       </div>
 
@@ -224,7 +224,7 @@ export default function Admin() {
             <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Classroom Management</h2>
             <button 
               onClick={() => setShowClassroomManager(!showClassroomManager)}
-              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium min-w-[80px]"
             >
               {showClassroomManager ? 'Hide' : 'Manage'}
             </button>
@@ -244,7 +244,7 @@ export default function Admin() {
                   />
                   <button 
                     onClick={addClassroom}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    className="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium min-w-[60px]"
                   >
                     Add
                   </button>
@@ -257,7 +257,7 @@ export default function Admin() {
                     <span className="text-sm font-medium">{classroom}</span>
                     <button 
                       onClick={() => removeClassroom(classroom)}
-                      className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                      className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium min-w-[60px]"
                     >
                       Remove
                     </button>
@@ -296,7 +296,7 @@ export default function Admin() {
                   </div>
                   <button
                     onClick={() => handleDeleteClick(record)}
-                    className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-1"
+                    className="px-4 py-2.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 font-medium min-w-[80px] justify-center"
                     title="Delete this record"
                   >
                     <IconClose size={14} className="hidden sm:inline" />
@@ -319,21 +319,21 @@ export default function Admin() {
                       <div className="flex gap-2 flex-wrap">
                         <button
                           onClick={() => downloadQRCode(record)}
-                          className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium min-w-[120px] justify-center"
                         >
                           <IconDownload size={16} />
                           Download QR
                         </button>
                         <button
                           onClick={() => sendQRWhatsApp(record)}
-                          className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                          className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium min-w-[140px] justify-center"
                         >
                           <IconMessageCircle size={16} />
                           Send via WhatsApp
                         </button>
                         <button
                           onClick={() => sendQRSMS(record)}
-                          className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                          className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium min-w-[120px] justify-center"
                         >
                           <IconMessageCircle size={16} />
                           Send via SMS
@@ -347,7 +347,7 @@ export default function Admin() {
                 ) : (
                   <button
                     onClick={() => generateQRForRecord(record)}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
+                    className="px-4 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium min-w-[140px]"
                   >
                     Generate QR Code
                   </button>

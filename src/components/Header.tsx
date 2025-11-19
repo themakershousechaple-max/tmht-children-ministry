@@ -27,19 +27,19 @@ export default function Header() {
     <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b dark:border-gray-800 sticky top-0 z-40 shadow-sm">
       <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link to="/dashboard" className="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors">
-            <LogoMark className="w-5 h-5" />
+          <Link to="/dashboard" className="inline-flex items-center justify-center shrink-0 w-8 h-8 rounded-lg bg-white hover:bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-600 transition-colors">
+            <LogoMark className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </Link>
-          <div className="hidden md:block text-base font-semibold">SafePick</div>
+          <div className="hidden md:block text-base font-semibold text-gray-800 dark:text-gray-100">SafePick</div>
         </div>
-        <div className="flex items-center gap-1 sm:gap-2">
-          <Link to="/dashboard" className={"px-2 sm:px-3 py-1.5 text-sm rounded-md border " + (loc.pathname === '/dashboard' ? 'bg-blue-600 text-white border-transparent' : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700')}>Dashboard</Link>
-          <Link to="/admin" className={"px-2 sm:px-3 py-1.5 text-sm rounded-md border " + (loc.pathname === '/admin' ? 'bg-blue-600 text-white border-transparent' : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700')}>Admin</Link>
+        <div className="flex items-center gap-3">
+          <Link to="/dashboard" className={"px-4 py-2.5 text-sm rounded-lg border font-medium min-w-[80px] text-center " + (loc.pathname === '/dashboard' ? 'bg-blue-600 text-white border-transparent shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-600')}>Dashboard</Link>
+          <Link to="/admin" className={"px-4 py-2.5 text-sm rounded-lg border font-medium min-w-[80px] text-center " + (loc.pathname === '/admin' ? 'bg-blue-600 text-white border-transparent shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-600')}>Admin</Link>
         </div>
         <div className="flex items-center">
-          <button aria-label="Menu" className="p-2 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 flex items-center gap-1" onClick={openMenu}>
-            <IconMenu className="w-4 h-4" />
-            <span className="hidden sm:inline text-sm font-medium">Menu</span>
+          <button aria-label="Menu" className="px-3 py-2.5 rounded-lg bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 flex items-center gap-2 border border-gray-300 dark:border-gray-600 min-w-[60px]" onClick={openMenu}>
+            <IconMenu className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            <span className="hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-200">Menu</span>
           </button>
         </div>
       </div>
