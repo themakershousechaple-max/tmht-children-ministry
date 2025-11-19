@@ -60,9 +60,13 @@ export default function Admin() {
 
   // Send QR code via SMS
   const sendQRSMS = (record: any) => {
-    const message = `🙏 ${record.childName} Pickup Details:\n\n📋 Pickup Code: ${record.code}\n📱 Show this QR code at pickup: ${record.qrUrl}\n\nPlease keep this code secure.\n\n- TMHT Children's Ministry`
-    sendSMSMessage(record.phone, message)
-    setSent(`SMS sent to ${record.parentName}`)
+    try {
+      const message = `🙏 ${record.childName} Pickup Details:\n\n📋 Pickup Code: ${record.code}\n📱 Show this QR code at pickup: ${record.qrUrl}\n\nPlease keep this code secure.\n\n- TMHT Children's Ministry`
+      sendSMSMessage(record.phone, message)
+      setSent(`SMS opened for ${record.parentName}`)
+    } catch (error) {
+      setSent(`Could not open SMS. Please check phone permissions.`)
+    }
   }
 
   // Send QR code via WhatsApp

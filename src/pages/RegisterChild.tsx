@@ -82,7 +82,12 @@ export default function RegisterChild() {
         onError: (error) => console.error('WhatsApp message failed:', error)
       })
       setTimeout(() => {
-        sendSMSMessage(phone, smsMessage)
+        try {
+          sendSMSMessage(phone, smsMessage)
+        } catch (smsError) {
+          console.error('SMS message failed:', smsError)
+          // SMS failure is not critical, continue with registration
+        }
       }, 1000) // Small delay between messages
       
       // Navigate to success page with all the details
