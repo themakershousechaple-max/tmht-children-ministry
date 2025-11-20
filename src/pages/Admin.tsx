@@ -39,6 +39,17 @@ export default function Admin() {
   const checkedIn = useMemo(() => rows.filter(r => !r.pickUpAt), [rows])
   const checkedOut = useMemo(() => rows.filter(r => !!r.pickUpAt), [rows])
   const [showCheckInOut, setShowCheckInOut] = useState(false)
+  const [multiSelect, setMultiSelect] = useState(true)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+  const toggleMultiSelect = () => {}
+  const toggleSelectionFor = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+  const handleDeleteSelected = async () => {
+    if (!selectedIds.length) return
+    setDeleteDialog({ isOpen: true, record: null })
+  }
 
   // Filter records based on search term
   const filteredRecords = useMemo(() => {
@@ -143,25 +154,32 @@ export default function Admin() {
   }
 
   const handleDeleteConfirm = async () => {
-    if (!deleteDialog.record) return
-    
     setIsDeleting(true)
-    const success = await deleteRecord(deleteDialog.record.id)
-    
-    if (success) {
-      // Remove from local state
-      setRows(prev => prev.filter(r => r.id !== deleteDialog.record.id))
-      // Remove QR code if exists
-      setQrCodes(prev => {
-        const newQrCodes = { ...prev }
-        delete newQrCodes[deleteDialog.record.id]
-        return newQrCodes
-      })
-      setSent(`Successfully deleted ${deleteDialog.record.childName}`)
-    } else {
-      setSent('Failed to delete record')
+    if (deleteDialog.record) {
+      const success = await deleteRecord(deleteDialog.record.id)
+      if (success) {
+        setRows(prev => prev.filter(r => r.id !== deleteDialog.record!.id))
+        setQrCodes(prev => {
+          const newQrCodes = { ...prev }
+          delete newQrCodes[deleteDialog.record!.id]
+          return newQrCodes
+        })
+        setSent(`Successfully deleted ${deleteDialog.record!.childName}`)
+      } else {
+        setSent('Failed to delete record')
+      }
+    } else if (selectedIds.length) {
+      try {
+        for (const id of selectedIds) {
+          await deleteRecord(id)
+        }
+        setRows(prev => prev.filter(r => !selectedIds.includes(r.id)))
+        setSelectedIds([])
+        setSent(`Deleted ${selectedIds.length} record(s)`) 
+      } catch (error) {
+        setSent('Failed to delete selected records')
+      }
     }
-    
     setIsDeleting(false)
     setDeleteDialog({ isOpen: false, record: null })
   }
@@ -215,148 +233,207 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Check-In/Check-Out Tracking Section */}
-      <div className="mt-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-2">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="text-xs font-semibold text-blue-800 dark:text-blue-200">
-            Check-In/Out Status
-          </h3>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowCheckInOut(!showCheckInOut)}
-              className="sm:hidden px-2 py-0.5 rounded bg-blue-600 text-white text-xs font-medium"
-            >
-              {showCheckInOut ? 'Hide' : 'Show'}
-            </button>
-            <button 
-              onClick={() => setShowCheckInOut(!showCheckInOut)}
-              aria-pressed={showCheckInOut}
-              className={(showCheckInOut ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-300 dark:bg-gray-700') + ' relative w-12 h-5 rounded-full transition-colors cursor-pointer hidden sm:inline-flex'}
-            >
-              <span className={(showCheckInOut ? 'translate-x-7' : 'translate-x-0') + ' absolute top-0.5 left-0.5 w-4 h-4 bg-white dark:bg-gray-100 rounded-full shadow transition-transform'}></span>
-            </button>
+      {/* Status + Classroom (responsive side-by-side) */}
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold text-blue-800 dark:text-blue-200">
+              Check-In/Out Status
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowCheckInOut(!showCheckInOut)}
+                className="sm:hidden px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium min-w-[80px]"
+              >
+                {showCheckInOut ? 'Hide' : 'Show'}
+              </button>
+              <button 
+                onClick={() => setShowCheckInOut(!showCheckInOut)}
+                aria-pressed={showCheckInOut}
+                className={(showCheckInOut ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-300 dark:bg-gray-700') + ' relative w-12 h-5 rounded-full transition-colors cursor-pointer hidden sm:inline-flex'}
+              >
+                <span className={(showCheckInOut ? 'translate-x-7' : 'translate-x-0') + ' absolute top-0.5 left-0.5 w-4 h-4 bg-white dark:bg-gray-100 rounded-full shadow transition-transform'}></span>
+              </button>
+            </div>
           </div>
+          
+          {showCheckInOut && (
+            <div className="space-y-3">
+              {/* Currently Checked-In */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                    Currently Checked-In ({checkedIn.length})
+                  </h4>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Active</span>
+                  </div>
+                </div>
+                {checkedIn.length > 0 ? (
+                  <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
+                    {checkedIn.map((record) => (
+                      <div key={record.id} className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700/50 shadow-sm hover:shadow-md transition-all duration-200">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <div>
+                            <div className="font-semibold text-emerald-800 dark:text-emerald-100 text-sm">{record.childName}</div>
+                            <div className="text-xs text-emerald-600 dark:text-emerald-400">{record.parentName}</div>
+                            <div className="text-xs font-mono text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-800/30 px-2 py-1 rounded mt-1 inline-block">
+                              Code: {record.code}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                            {new Date(record.checkInAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                          </div>
+                          <div className="text-xs text-emerald-500 dark:text-emerald-500 mt-1">
+                            {record.classroom && (
+                              <span className="bg-emerald-100 dark:bg-emerald-800/30 px-2 py-1 rounded-full text-xs">
+                                {record.classroom}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <div className="w-4 h-4 text-emerald-400">👶</div>
+                    </div>
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                      No children currently checked in
+                    </div>
+                    <div className="text-xs text-emerald-500 dark:text-emerald-500 mt-1">
+                      Ready to welcome new arrivals!
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Recently Checked-Out */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    Recently Checked-Out ({checkedOut.length})
+                  </h4>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Completed</span>
+                  </div>
+                </div>
+                {checkedOut.length > 0 ? (
+                  <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
+                    {checkedOut.slice(0, 10).map((record) => (
+                      <div key={record.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                          <div>
+                            <div className="font-semibold text-gray-800 dark:text-gray-100 text-sm">{record.childName}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">{record.parentName}</div>
+                            <div className="text-xs font-mono text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/30 px-2 py-1 rounded mt-1 inline-block">
+                              Code: {record.code}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                            Out: {record.pickUpAt ? new Date(record.pickUpAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'N/A'}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            {record.classroom && (
+                              <span className="bg-gray-100 dark:bg-gray-800/30 px-2 py-1 rounded-full text-xs">
+                                {record.classroom}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800/30 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <div className="w-4 h-4 text-gray-400">✅</div>
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                      No recent check-outs
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                      All children are currently checked in
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-        
-        {showCheckInOut && (
-          <div className="space-y-3">
-            {/* Currently Checked-In */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                  Currently Checked-In ({checkedIn.length})
-                </h4>
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Active</span>
-                </div>
-              </div>
-              {checkedIn.length > 0 ? (
-                <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
-                  {checkedIn.map((record) => (
-                    <div key={record.id} className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700/50 shadow-sm hover:shadow-md transition-all duration-200">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                        <div>
-                          <div className="font-semibold text-emerald-800 dark:text-emerald-100 text-sm">{record.childName}</div>
-                          <div className="text-xs text-emerald-600 dark:text-emerald-400">{record.parentName}</div>
-                          <div className="text-xs font-mono text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-800/30 px-2 py-1 rounded mt-1 inline-block">
-                            Code: {record.code}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                          {new Date(record.checkInAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-                        </div>
-                        <div className="text-xs text-emerald-500 dark:text-emerald-500 mt-1">
-                          {record.classroom && (
-                            <span className="bg-emerald-100 dark:bg-emerald-800/30 px-2 py-1 rounded-full text-xs">
-                              {record.classroom}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <div className="w-4 h-4 text-emerald-400">👶</div>
-                  </div>
-                  <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                    No children currently checked in
-                  </div>
-                  <div className="text-xs text-emerald-500 dark:text-emerald-500 mt-1">
-                    Ready to welcome new arrivals!
-                  </div>
-                </div>
-              )}
-            </div>
 
-            {/* Recently Checked-Out */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                  Recently Checked-Out ({checkedOut.length})
-                </h4>
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Completed</span>
-                </div>
-              </div>
-              {checkedOut.length > 0 ? (
-                <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
-                  {checkedOut.slice(0, 10).map((record) => (
-                    <div key={record.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                        <div>
-                          <div className="font-semibold text-gray-800 dark:text-gray-100 text-sm">{record.childName}</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">{record.parentName}</div>
-                          <div className="text-xs font-mono text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800/30 px-2 py-1 rounded mt-1 inline-block">
-                            Code: {record.code}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                          Out: {record.pickUpAt ? new Date(record.pickUpAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'N/A'}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                          {record.classroom && (
-                            <span className="bg-gray-100 dark:bg-gray-800/30 px-2 py-1 rounded-full text-xs">
-                              {record.classroom}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800/30 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <div className="w-4 h-4 text-gray-400">✅</div>
-                  </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                    No recent check-outs
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    All children are currently checked in
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* Classroom Management (side column on md+) */}
+        <div className="bg-gray-100 dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Classroom Management</h2>
+            <button 
+              onClick={() => setShowClassroomManager(!showClassroomManager)}
+              className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium min-w-[80px]"
+            >
+              {showClassroomManager ? 'Hide' : 'Manage'}
+            </button>
           </div>
-        )}
+          {showClassroomManager && (
+            <div className="mt-4 pt-4 border-t dark:border-gray-600">
+              <div className="mb-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Add new classroom..."
+                    value={newClassroom}
+                    onChange={(e) => setNewClassroom(e.target.value)}
+                    className="flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 text-sm"
+                    onKeyPress={(e) => e.key === 'Enter' && addClassroom()}
+                  />
+                  <button 
+                    onClick={addClassroom}
+                    className="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium min-w-[60px]"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {classroomOptions.map((classroom) => (
+                  <div key={classroom} className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded-lg border dark:border-gray-600">
+                    <span className="text-sm font-medium">{classroom}</span>
+                    <button 
+                      onClick={() => removeClassroom(classroom)}
+                      className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium min-w-[60px]"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedIds.length >= 2 && (
+            <div className="mt-4">
+              <button 
+                onClick={handleDeleteSelected}
+                className="w-full px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+              >
+                Delete Selected ({selectedIds.length})
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="mt-3 grid gap-3">
-        <button className="px-4 py-2.5 bg-blue-600 text-white rounded-lg border border-blue-600 hover:bg-blue-700 active:bg-white active:text-blue-600 transition-colors text-sm font-medium" onClick={exportCsv}>Export CSV</button>
-        {!!sent && <div className="text-xs text-emerald-700 dark:text-emerald-400">{sent}</div>}
-      </div>
+      {/* Toolbar removed: Export CSV moved to header menu */}
+      {!!sent && <div className="mt-2 text-xs text-emerald-700 dark:text-emerald-400">{sent}</div>}
 
       {/* Recently Released Children Section */}
       {releasedChildren.length > 0 && (
@@ -411,7 +488,7 @@ export default function Admin() {
 
       {/* Search Section */}
       <div className="mt-6">
-        <div className="flex justify-center mb-4">
+            <div className="flex justify-center mb-4">
           <div className="relative w-full max-w-md">
             <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
@@ -419,67 +496,31 @@ export default function Admin() {
               placeholder="Search by name, phone, or code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 text-sm"
+              className="w-full pl-10 pr-4 py-2 border rounded-full bg-white dark:bg-gray-800 dark:border-gray-700 text-sm"
             />
           </div>
         </div>
 
-        {/* Connected Classroom Management Box */}
-        <div className="bg-gray-100 dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-4 mb-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Classroom Management</h2>
-            <button 
-              onClick={() => setShowClassroomManager(!showClassroomManager)}
-              className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium min-w-[80px]"
-            >
-              {showClassroomManager ? 'Hide' : 'Manage'}
-            </button>
-          </div>
-          
-          {showClassroomManager && (
-            <div className="mt-4 pt-4 border-t dark:border-gray-600">
-              <div className="mb-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Add new classroom..."
-                    value={newClassroom}
-                    onChange={(e) => setNewClassroom(e.target.value)}
-                    className="flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 text-sm"
-                    onKeyPress={(e) => e.key === 'Enter' && addClassroom()}
-                  />
-                  <button 
-                    onClick={addClassroom}
-                    className="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium min-w-[60px]"
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                {classroomOptions.map((classroom) => (
-                  <div key={classroom} className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded-lg border dark:border-gray-600">
-                    <span className="text-sm font-medium">{classroom}</span>
-                    <button 
-                      onClick={() => removeClassroom(classroom)}
-                      className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium min-w-[60px]"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        
+
+        
 
         <div className="grid gap-3 overflow-y-auto hide-scrollbar" style={{ minHeight: 'calc(100vh - 400px)' }}>
           {filteredRecords.map((record) => (
-            <div key={record.id} className="p-3 bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700">
+            <div key={record.id} className={'p-3 bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700'}>
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="font-semibold text-lg">{record.childName}</h3>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => toggleSelectionFor(record.id)}
+                      role="checkbox"
+                      aria-checked={selectedIds.includes(record.id)}
+                      className={(selectedIds.includes(record.id) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-gray-900 text-blue-600 border-gray-400 dark:border-gray-600') + ' hidden sm:flex w-4 h-4 rounded-sm items-center justify-center text-[9px] leading-none'}
+                    >
+                      {selectedIds.includes(record.id) ? '✓' : ''}
+                    </button>
+                    <h3 className="font-semibold text-lg">{record.childName}</h3>
+                  </div>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     {record.parentName} • {record.phone}
                   </p>
@@ -551,12 +592,22 @@ export default function Admin() {
                     </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => generateQRForRecord(record)}
-                    className="px-4 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium min-w-[140px]"
-                  >
-                    Generate QR Code
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => toggleSelectionFor(record.id)}
+                      role="checkbox"
+                      aria-checked={selectedIds.includes(record.id)}
+                      className={(selectedIds.includes(record.id) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-gray-900 text-blue-600 border-gray-400 dark:border-gray-600') + ' w-4 h-4 rounded-full flex items-center justify-center text-[9px] leading-none sm:hidden'}
+                    >
+                      {selectedIds.includes(record.id) ? '✓' : ''}
+                    </button>
+                    <button
+                      onClick={() => generateQRForRecord(record)}
+                      className="px-4 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium min-w-[140px]"
+                    >
+                      Generate QR Code
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -575,9 +626,9 @@ export default function Admin() {
         isOpen={deleteDialog.isOpen}
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
-        title="Delete Check-in Record"
-        message="Are you sure you want to delete this check-in record? This will remove it from both local storage and Supabase."
-        itemName={deleteDialog.record?.childName}
+        title={selectedIds.length ? 'Delete Selected Records' : 'Delete Check-in Record'}
+        message={selectedIds.length ? `Are you sure you want to delete ${selectedIds.length} selected record(s)? This action cannot be undone.` : 'Are you sure you want to delete this check-in record? This will remove it from both local storage and Supabase.'}
+        itemName={selectedIds.length ? undefined : deleteDialog.record?.childName}
         isLoading={isDeleting}
       />
     </div>

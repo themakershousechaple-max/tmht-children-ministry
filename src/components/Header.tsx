@@ -69,6 +69,10 @@ export default function Header() {
                 </div>
                 <div className="mt-4 text-xs font-semibold text-gray-500">ACTIONS</div>
                 <div className="mt-2 grid gap-2">
+                  <button className="flex items-center justify-between px-3 py-2 rounded-xl border shadow-sm bg-white hover:bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700" onClick={()=>{ exportLocalCsv(); closeMenu() }}>
+                    <span>Export CSV</span>
+                    <span className="text-xs px-2 py-1 rounded bg-blue-600 text-white">Download</span>
+                  </button>
                   <button className="flex items-center justify-between px-3 py-2 rounded-xl border shadow-sm bg-white hover:bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700" onClick={()=>{
                     const d = document.documentElement.classList.toggle('dark')
                     localStorage.setItem('theme', d ? 'dark' : 'light')
